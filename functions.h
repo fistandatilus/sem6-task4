@@ -12,6 +12,6 @@ double f5(double x, double y);
 double f6(double x, double y);
 double f7(double x, double y);
 
-void set_func (double (**f)(double, double), int k);
+void set_func(double (**f)(double, double), int k);
 
 #endif //FUNCTIONS_H

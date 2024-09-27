@@ -8,33 +8,30 @@
 
 struct msr
 {
-  double *data = nullptr;
-  size_t *indexes = nullptr; //does not own
-  double norm = 0;
-  size_t n = 0;
-  size_t size = 0;
+    double *data = nullptr;
+    size_t *indexes = nullptr; //does not own
+    double norm = 0;
+    size_t n = 0;
+    size_t size = 0;
 
-  int set_template(size_t *ind, size_t n, size_t size);
-  void erase()
-  {
-    if (data)
-      delete[] data;
-    data = nullptr;
-    indexes = nullptr;
-    n = 0;
-    size = 0;
-    norm = 0;
-  }
-  ~msr()
-  {
-    erase();
-  }
-  msr() = default;
-  msr(msr &) = delete;
-  msr &operator=(msr &) = delete;
-  int copy(msr &x);
-  int copy_template(msr &x);
-  void print(size_t p, FILE *fp = stdout);
+    int set_template(size_t *ind, size_t n, size_t size);
+    void erase()
+    {
+        if (data)
+            delete[] data;
+        data = nullptr;
+        indexes = nullptr;
+        n = 0;
+        size = 0;
+        norm = 0;
+    }
+    ~msr() { erase(); }
+    msr() = default;
+    msr(msr &) = delete;
+    msr &operator=(msr &) = delete;
+    int copy(msr &x);
+    int copy_template(msr &x);
+    void print(size_t p, FILE *fp = stdout);
 };
 
 int form_preconditioner(msr &a, msr &precond, double *diag, double eps, int p, int thread);
