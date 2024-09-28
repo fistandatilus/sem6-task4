@@ -16,16 +16,20 @@ private:
     double b = 1;
     double c = -1;
     double d = 1;
-    int n = 1;
-    int m = 1;
+    size_t nx = 1;
+    size_t ny = 1;
+    size_t mx = 1;
+    size_t my = 1;
     int mode = 0;
     int p = 0;
     double (*f)(double) = nullptr;
-    double f_max = 0;
-    double f_min = 0;
+    double max_f = 0;
+    double min_f = 0;
+    double max_approx = 0;
+    double min_approx = 0;
+    approximation approx;
     TrivialApproximation trivapp;
-    NewtonApproximation newtapp;
-    BesselApproximation bessapp;
+    DifferenceApproximation difapp;
 
 public:
     Graph(QWidget *parent);
@@ -48,12 +52,17 @@ public slots:
     void flustuate_minus();
     void eval_y_max_min();
 
+signals:
+    void set_label(const QString &);
+
 protected:
     void paintEvent(QPaintEvent *event);
-    double paint_approx(Approximation &approx, QPainter &painter, Qt::GlobalColor color = Qt::black);
+    void paint_approx(Paintable &approx, QPainter &painter);
     void set_func(int id);
     void update_func();
 };
+
+QColor color_maker(double a);
 
 #define DEFAULT_A -10
 #define DEFAULT_B 10

@@ -45,7 +45,10 @@ Graph::Graph(QWidget *parent)
 {
     a = DEFAULT_A;
     b = DEFAULT_B;
-    n = DEFAULT_N;
+    nx = DEFAULT_N;
+    ny = DEFAULT_N;
+    mx = DEFAULT_N;
+    my = DEFAULT_N;
     mode = 0;
 
     func_id = 0;
@@ -63,17 +66,26 @@ QSize Graph::sizeHint() const
 
 int Graph::parse_command_line(int argc, char *argv[])
 {
-    int k;
-    if (argc < 5 || sscanf(argv[1], "%le", &a) != 1 || sscanf(argv[2], "%le", &b) != 1
-        || b - a < 1.e-20 || sscanf(argv[3], "%d", &n) != 1 || sscanf(argv[4], "%d", &k) != 1
-        || n <= 0) {
-        printf("Usage: %s a b n k\na, b - left and right ends of the segment\nn - amount of points "
-               "to interpolate by\nk - which function to use\n",
+    int k, max_it, threads;
+    double eps;
+    if (!(argc == 11 && sscanf(argv[1], "%lf", &a) == 1 && sscanf(argv[2], "%lf", &b) == 1
+          && sscanf(argv[3], "%lf", &c) == 1 && sscanf(argv[4], "%lf", &d) == 1
+          && sscanf(argv[5], "%lu", &nx) == 1 && nx > 0 && sscanf(argv[6], "%lu", &ny) == 1 && ny > 0
+          && sscanf(argv[7], "%lu", &mx) == 1 && mx > 0 && sscanf(argv[8], "%lu", &my) == 1 && my > 0
+          && sscanf(argv[9], "%d", &k) == 1 && k >= 0 && k <= 7 && sscanf(argv[10], "%lf", &eps) == 1
+          && eps > 0 && b - a > eps && d - c > eps && sscanf(argv[11], "%d", &max_it) == 1
+          && max_it >= 1 && sscanf(argv[12], "%d", &threads) == 1 && threads >= 1)) {
+        printf("Program usage: %s a b c d nx ny mx my k eps max_it p\na b c d - ends of segments. their "
+               "length should be larger than the precision\nnx ny - amounts of segments "
+               "subdivisions\nmx my - visualization subdivizions\n"
+               "k - function to approximate\neps - desired precision\nmax_it - "
+               "maximum number of iterations\np - amount of threads to use\n",
                argv[0]);
         return -1;
     }
 
     set_func(k);
+
     return 0;
 }
 
@@ -210,99 +222,65 @@ void Graph::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
 
-    // draw axis
-    QPen pen_red(Qt::red, 0, Qt::SolidLine);
-    painter.setPen(pen_red);
-    painter.drawLine(m2w(a, 0), m2w(b, 0));
-    painter.drawLine(m2w(0, y_min), m2w(0, y_max));
-
     //draw functions
     double max;
+    QString label;
     switch (mode) {
     case 0:
-        printf("maximum of |f|:");
-        max = paint_approx(trivapp, painter, Qt::black);
-        painter.setPen(Qt::blue);
-        painter.drawText(0, 30, QString::asprintf("maximum of |f| = %le", max));
-        printf("maximum of newton:");
-        max = paint_approx(newtapp, painter, Qt::blue);
-        painter.setPen(Qt::blue);
-        painter.drawText(0, 45, QString::asprintf("maximum of newton = %le", max));
+        max = fabs(max_f) > fabs(min_f) ? fabs(max_f) : fabs(min_f);
+        paint_approx(trivapp, painter, Qt::black);
         break;
     case 1:
-        printf("maximum of |f|:");
-        max = paint_approx(trivapp, painter, Qt::black);
-        painter.setPen(Qt::blue);
-        painter.drawText(0, 30, QString::asprintf("maximum of |f| = %le", max));
-        printf("maximum of bessel:");
-        max = paint_approx(bessapp, painter, Qt::darkCyan);
-        painter.setPen(Qt::darkCyan);
-        painter.drawText(0, 45, QString::asprintf("maximum of bessel = %le", max));
+        max = fabs(max_approx) > fabs(min_approx) ? fabs(max_approx) : fabs(min_approx);
+        paint_approxrox(approxroximation, painter, Qt::black);
         break;
     case 2:
-        printf("maximum of |f|:");
-        max = paint_approx(trivapp, painter, Qt::black);
-        painter.setPen(Qt::blue);
-        painter.drawText(0, 30, QString::asprintf("maximum of |f| = %le", max));
-        printf("maximum of newton:");
-        max = paint_approx(newtapp, painter, Qt::blue);
-        painter.setPen(Qt::blue);
-        painter.drawText(0, 45, QString::asprintf("maximum of newton = %le", max));
-        printf("maximum of bessel:");
-        max = paint_approx(bessapp, painter, Qt::darkCyan);
-        painter.setPen(Qt::darkCyan);
-        painter.drawText(0, 60, QString::asprintf("maximum of bessel = %le", max));
-        break;
-    case 3:
-        DifferenceApproximation diff;
-        if (n <= 50) {
-            diff.init(&trivapp, &newtapp);
-            printf("maximum of newton:");
-            max = paint_approx(diff, painter, Qt::blue);
-            painter.setPen(Qt::blue);
-            painter.drawText(0, 30, QString::asprintf("maximum of newton = %le", max));
-        }
-        diff.init(&trivapp, &bessapp);
-        printf("maximum of bessel:");
-        max = paint_approx(diff, painter, Qt::darkCyan);
-        painter.setPen(Qt::darkCyan);
-        painter.drawText(0, 45, QString::asprintf("maximum of bessel = %le", max));
-
+        max = fabs(max_f - max_approx) > fabs(min_f - min_approx) ? fabs(max_f - max_approx) : fabs(min_f - min_approx);
+        paint_approxrox(diffapprox, painter, Qt::black);
         break;
     }
+    printf("maximum of |f| = %le ", max);
+    label.append(QString::asprintf("maximum of |f| = %le", max));
     // render function name
     painter.setPen("blue");
-    painter.drawText(0, 15,
-                     QString::asprintf("%s n = %d, a = %.2e b = %.2e, p = %d, mode = %d",
-                                       f_name, n, a, b, p, mode));
+    label.append(QString::asprintf("%s nx = %lu, ny = %lu a = %.2e b = %.2e, p = %d, mode = %d",
+                                       f_name, nx, ny,  a, b, p, mode));
+    emit set_label(label);
 }
 
-Qcolor color_maker(double a) {
+QColor color_maker(double a) {
     unsigned int r = ((unsigned int)(2*a - 1)) * 255;
-    unsigned int g = ((unsigned int)(1 - fabs(2*a - 1)) * 255;
-    unsigned int r = ((unsigned int)(1 - 2*a)) * 255;
-    
-    return Qcolor(r, g, b);
+    unsigned int g = ((unsigned int)(1 - fabs(2*a - 1))) * 255;
+    unsigned int b = ((unsigned int)(1 - 2*a)) * 255;
+
+    return QColor(r, g, b);
 }
 
-double Graph::paint_approx(Approximation &approx, QPainter &painter, Qt::GlobalColor color)
+void Graph::paint_approx(Paintable &approx, QPainter &painter)
 {
-    painter.setPen(pen_black);
     QPointF triangle[3];
     double hx = (b - a) / mx;
     double hy = (d - c) / my;
-    for (int i = 0; i < mx; i++)
-        for (int j = 0; j < my; j++) {
+    for (size_t i = 0; i < mx; i++)
+        for (size_t j = 0; j < my; j++) {
             triangle[0] = m2w(a + hx*i, c + hy*j);
             triangle[1] = m2w(a + hx*(i + 1), c + hy*j);
-            triangle[2] = m2w(a + hx*(i + 1), c + hy*(j + 1);
+            triangle[2] = m2w(a + hx*(i + 1), c + hy*(j + 1));
 
-            painter.DrawConvexPolygon(triangle, 3);
+            double value;
+            value = (approx(a + hx*(i + 2/3), c + hy*(j + 1/3)) - min_approx)/(max_approx - min_approx);
+            QColor color = color_maker(value);
+            QBrush brush(color);
+            painter.setBrush(brush);
+
+            painter.drawConvexPolygon(triangle, 3);
 
             triangle[1] = m2w(a + hx*i, c + hy*(j + 1));
-            painter.DrawConvexPolygon(triangle, 3);
-        }
+            value = (approx(a + hx*(i + 1/3), c + hy*(j + 2/3)) - min_approx)/(max_approx - min_approx);
+            color = color_maker(value);
+            brush.setColor(color);
+            painter.setBrush(brush);
 
-    printf("%le\n", max);
-    return max;
+            painter.drawConvexPolygon(triangle, 3);
+        }
 }

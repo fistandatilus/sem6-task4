@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QLabel>
 #include <QMainWindow>
 #include <fenv.h>
 
@@ -11,8 +12,9 @@ int main(int argc, char *argv[])
 
     QMainWindow *window = new QMainWindow;
     QMenuBar *tool_bar = new QMenuBar(window);
-    QStatusBar *status_bar = new QStatusBar();
+    QStatusBar *status_bar = new QStatusBar(window);
     Graph *graph = new Graph(window);
+    QLabel *label = new QLabel(status_bar)
 
     QAction *action;
     /*
@@ -54,6 +56,8 @@ int main(int argc, char *argv[])
     window->setStatusBar(status_bar);
     window->setCentralWidget(graph);
     window->setWindowTitle("Graph");
+
+    connect(graph, Graph::set_label, label, QLabel::set_text);
 
     window->show();
     app.exec();

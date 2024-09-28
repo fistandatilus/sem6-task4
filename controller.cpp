@@ -72,18 +72,6 @@ int main(int argc, char *argv[])
     double eps, a, b, c, d;
     size_t nx, ny;
 
-    if (!(argc == 11 && sscanf(argv[1], "%lf", &a) == 1 && sscanf(argv[2], "%lf", &b) == 1
-          && sscanf(argv[3], "%lf", &c) == 1 && sscanf(argv[4], "%lf", &d) == 1
-          && sscanf(argv[5], "%lu", &nx) == 1 && nx > 0 && sscanf(argv[6], "%lu", &ny) == 1 && ny > 0
-          && sscanf(argv[7], "%d", &k) == 1 && k >= 0 && k <= 7 && sscanf(argv[8], "%lf", &eps) == 1
-          && eps > 0 && b - a > eps && d - c > eps && sscanf(argv[9], "%d", &max_it) == 1
-          && max_it >= 1 && sscanf(argv[10], "%d", &p) == 1 && p >= 1)) {
-        printf("Program usage: %s a b c d nx ny k eps max_it p\na b c d - ends of segments. their "
-               "length should be larger than the precision\nnx ny - amounts of segments "
-               "subdivisions\nk - function to approximate\neps - desired precision\nmax_it - "
-               "maximum number of iterations\np - amount of threads to use\n",
-               argv[0]);
-        return -1;
     }
 
     pthread_t *tid = new pthread_t[p];
