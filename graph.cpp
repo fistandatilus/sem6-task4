@@ -195,8 +195,7 @@ void Graph::eval_y_max_min()
 QPointF Graph::m2w(double x_m, double y_m)
 {
     double x_w = (x_m - a) / (b - a) * width();
-    double y_w = (y_max - y_m) / (fabs(y_max - y_min) > VERY_SMALL_NUMBER ? y_max - y_min : 1)
-                 * height();
+    double y_w = (y_m - c) / (d - c) * height();
     return QPointF(x_w, y_w);
 }
 
@@ -273,34 +272,37 @@ void Graph::paintEvent(QPaintEvent * /* event */)
     }
     // render function name
     painter.setPen("blue");
-    painter.drawText(0,
-                     15,
+    painter.drawText(0, 15,
                      QString::asprintf("%s n = %d, a = %.2e b = %.2e, p = %d, mode = %d",
-                                       f_name,
-                                       n,
-                                       a,
-                                       b,
-                                       p,
-                                       mode));
+                                       f_name, n, a, b, p, mode));
+}
+
+Qcolor color_maker(double a) {
+    unsigned int r = ((unsigned int)(2*a - 1)) * 255;
+    unsigned int g = ((unsigned int)(1 - fabs(2*a - 1)) * 255;
+    unsigned int r = ((unsigned int)(1 - 2*a)) * 255;
+    
+    return Qcolor(r, g, b);
 }
 
 double Graph::paint_approx(Approximation &approx, QPainter &painter, Qt::GlobalColor color)
 {
-    QPen pen_black(color, 0, Qt::SolidLine);
     painter.setPen(pen_black);
-    double x_1, x_2, y_1, y_2, max;
-    x_1 = x_w2m(0);
-    y_1 = approx(x_1);
-    max = fabs(y_1);
-    for (int i = 1; i < width(); i++) {
-        x_2 = x_w2m(i);
-        y_2 = approx(x_2);
-        painter.drawLine(m2w(x_1, y_1), m2w(x_2, y_2));
-        if (max < fabs(y_2))
-            max = fabs(y_2);
-        x_1 = x_2;
-        y_1 = y_2;
-    }
+    QPointF triangle[3];
+    double hx = (b - a) / mx;
+    double hy = (d - c) / my;
+    for (int i = 0; i < mx; i++)
+        for (int j = 0; j < my; j++) {
+            triangle[0] = m2w(a + hx*i, c + hy*j);
+            triangle[1] = m2w(a + hx*(i + 1), c + hy*j);
+            triangle[2] = m2w(a + hx*(i + 1), c + hy*(j + 1);
+
+            painter.DrawConvexPolygon(triangle, 3);
+
+            triangle[1] = m2w(a + hx*i, c + hy*(j + 1));
+            painter.DrawConvexPolygon(triangle, 3);
+        }
+
     printf("%le\n", max);
     return max;
 }

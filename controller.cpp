@@ -25,6 +25,8 @@ struct arguments
     double r2;
     double r3;
     double r4;
+    double max;
+    double min;
     double t1;
     double t2;
     int it;
@@ -200,6 +202,7 @@ void *thread_func(void *void_arg)
     r2 = approx->residual2(p, thread);
     r3 = approx->residual3(p, thread);
     r4 = approx->residual4(p, thread);
+
     reduce_sum<double>(p);
     t2 = get_full_time() - t2;
     return nullptr;

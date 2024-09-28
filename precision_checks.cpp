@@ -81,3 +81,22 @@ double approximation::residual4(int p, int thread)
     reduce_sum(p, &sum, 1);
     return sum;
 }
+
+void approximation::max_min(int p, int thread, double &max, double &min)
+{
+    size_t start, stride;
+    start_and_size(p, thread, (nx + 1)*(ny + 1), start, stride);
+    max = coeffs[0];
+    min = coeffs[0];
+
+    for (size_t j = start; j < start + stride; j++) {
+        if (coeffs[j] > max)
+            max = coeffs[j];
+        if (coeffs[j] < min)
+            min = coeffs[j];
+    }
+    min = -min;
+    reduce_max(p, &max, 1);
+    reduce_max(p, &min, 1);
+    min = -min;
+}

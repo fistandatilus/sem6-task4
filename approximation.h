@@ -31,6 +31,7 @@ class approximation
     double residual2(int p, int thread);
     double residual3(int p, int thread);
     double residual4(int p, int thread);
+    void max_min(int p, int thread, double &max, double &min);
 
     void erase()
     {
