@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <fenv.h>
 
+#include "controller.h"
 #include "graph.h"
 
 int main(int argc, char *argv[])
@@ -13,8 +14,9 @@ int main(int argc, char *argv[])
     QMainWindow *window = new QMainWindow;
     QMenuBar *tool_bar = new QMenuBar(window);
     QStatusBar *status_bar = new QStatusBar(window);
+    QLabel *label = new QLabel(status_bar);
     Graph *graph = new Graph(window);
-    QLabel *label = new QLabel(status_bar)
+    Controller *controller = new Controller(graph);
 
     QAction *action;
     /*
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
     window->setCentralWidget(graph);
     window->setWindowTitle("Graph");
 
-    connect(graph, Graph::set_label, label, QLabel::set_text);
+    QObject::connect(graph, SIGNAL(Graph::set_label(QString)), label, SLOT(QLabel::setText(QString)));
 
     window->show();
     app.exec();

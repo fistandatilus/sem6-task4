@@ -3,8 +3,18 @@
 #include <sched.h>
 #include <sys/sysinfo.h>
 
-#include "approximation.h"
-#include "functions.h"
+#include "controller.h"
+
+
+Controller::Controller(Graph *parent) 
+    : QObject(parent) {
+    approx = nullptr;
+    arg = nullptr;
+    state = State::standby;
+    tid = nullptr;
+    connect(parent, SIGNAL(Graph::calculate(approx *)), SLOT(calculate(approx *)));
+    connect(this, SIGNAL(ready(approx *)), parent, SLOT(ready_approx(approx *)));
+}
 
 void *thread_func(void *void_arg);
 

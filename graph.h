@@ -27,12 +27,16 @@ private:
     double min_f = 0;
     double max_approx = 0;
     double min_approx = 0;
-    approximation approx;
+    approximation *approx;
     TrivialApproximation trivapp;
     DifferenceApproximation difapp;
 
 public:
     Graph(QWidget *parent);
+    ~Graph() {
+    if (approx)
+        delete approx;
+    }
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
@@ -51,9 +55,11 @@ public slots:
     void fluctuate_plus();
     void flustuate_minus();
     void eval_y_max_min();
+    void approx_ready(approximation *);
 
 signals:
     void set_label(const QString &);
+    void calculate(approximation *);
 
 protected:
     void paintEvent(QPaintEvent *event);
