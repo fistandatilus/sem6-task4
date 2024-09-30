@@ -12,66 +12,11 @@ Controller::Controller(Graph *parent)
     arg = nullptr;
     state = State::standby;
     tid = nullptr;
-    connect(parent, SIGNAL(Graph::calculate(approx *)), SLOT(calculate(approx *)));
+    connect(parent, SIGNAL(Graph::calculate(approximation *, arguments &)), SLOT(calculate(approximation *, arguments &)));
     connect(this, SIGNAL(ready(approx *)), parent, SLOT(ready_approx(approx *)));
 }
 
 void *thread_func(void *void_arg);
-
-struct arguments
-{
-    approximation *approx;
-    double a;
-    double b;
-    double c;
-    double d;
-    double eps;
-    size_t nx;
-    size_t ny;
-    int max_it;
-    int k;
-
-    double r1;
-    double r2;
-    double r3;
-    double r4;
-    double max;
-    double min;
-    double t1;
-    double t2;
-    int it;
-    status stat;
-
-    int p;
-    int thread;
-
-    void set(approximation *approx,
-             double a,
-             double b,
-             double c,
-             double d,
-             double eps,
-             size_t nx,
-             size_t ny,
-             int max_it,
-             int k,
-             int p,
-             int thread)
-    {
-        this->approx = approx;
-        this->a = a;
-        this->b = b;
-        this->c = c;
-        this->d = d;
-        this->eps = eps;
-        this->nx = nx;
-        this->ny = ny;
-        this->max_it = max_it;
-        this->k = k;
-        this->p = p;
-        this->thread = thread;
-    }
-};
 
 void do_threads(pthread_t *tid, arguments *arg, int p, const char *exe_name, int task);
 

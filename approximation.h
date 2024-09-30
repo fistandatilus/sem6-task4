@@ -75,7 +75,8 @@ protected:
       nx = 0;
       ny = 0;
     }
-    ~approximation()
+    approximation() = default;
+    virtual ~approximation()
     {
       erase();
     }
@@ -91,8 +92,8 @@ private:
 
 public:
     TrivialApproximation() = default;
-    TrivialApproximation(approximation &app) {
-        f = app.f;
+    void init(double (*f)(double, double)) {
+        this->f = f;
     }
     ~TrivialApproximation() {
         f = nullptr;
@@ -120,11 +121,67 @@ public:
     ~DifferenceApproximation() {
         approx = nullptr;
     }
-    void set_approx(approximation *approx) {
+    void init(approximation *approx) {
         this->approx = approx;
     }
     virtual double operator()(double x, double y) {
         return fabs((approx->f)(x, y) - approx->operator()(x, y));
     }
 };
+
+struct arguments
+{
+    approximation *approx;
+    double a;
+    double b;
+    double c;
+    double d;
+    double eps;
+    size_t nx;
+    size_t ny;
+    int max_it;
+    int k;
+
+    double r1;
+    double r2;
+    double r3;
+    double r4;
+    double max;
+    double min;
+    double t1;
+    double t2;
+    int it;
+    status stat;
+
+    int p;
+    int thread;
+
+    void set(approximation *approx,
+             double a,
+             double b,
+             double c,
+             double d,
+             double eps,
+             size_t nx,
+             size_t ny,
+             int max_it,
+             int k,
+             int p,
+             int thread)
+    {
+        this->approx = approx;
+        this->a = a;
+        this->b = b;
+        this->c = c;
+        this->d = d;
+        this->eps = eps;
+        this->nx = nx;
+        this->ny = ny;
+        this->max_it = max_it;
+        this->k = k;
+        this->p = p;
+        this->thread = thread;
+    }
+};
+
 #endif

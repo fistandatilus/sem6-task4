@@ -19,37 +19,71 @@ int main(int argc, char *argv[])
     Controller *controller = new Controller(graph);
 
     QAction *action;
-    /*
-  action = tool_bar->addAction ("&Change function", graph, SLOT (change_func ()));
-  action->setShortcut (QString ("0"));
 
-  action = tool_bar->addAction ("&Change mode", graph, SLOT (change_mode ()));
-  action->setShortcut (QString ("1"));
+    action = tool_bar->addAction ("&Change function", graph, SLOT (change_func ()));
+    action->setShortcut (QString ("0")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
 
-  action = tool_bar->addAction ("&Wider", graph, SLOT (enlarge_segment ()));
-  action->setShortcut (QString ("2"));
+    action = tool_bar->addAction ("&Change mode", graph, SLOT (change_mode ()));
+    action->setShortcut (QString ("1")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
 
-  action = tool_bar->addAction ("&Narrower", graph, SLOT (shrink_segment ()));
-  action->setShortcut (QString ("3"));
 
-  action = tool_bar->addAction ("&n*2", graph, SLOT (enlarge_n ()));
-  action->setShortcut (QString ("4"));
+    action = tool_bar->addAction ("&Wider", graph, SLOT (enlarge_segment ()));
+    action->setShortcut (QString ("2")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
 
-  action = tool_bar->addAction ("&n/2", graph, SLOT (shrink_n ()));
-  action->setShortcut (QString ("5"));
 
-  action = tool_bar->addAction ("f_n/2+", graph, SLOT (fluctuate_plus ()));
-  action->setShortcut (QString ("6"));
+    action = tool_bar->addAction ("&Narrower", graph, SLOT (shrink_segment ()));
+    action->setShortcut (QString ("3")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
 
-  action = tool_bar->addAction ("f_n/2-", graph, SLOT (flustuate_minus ()));
-  action->setShortcut (QString ("7"));
 
-  action = tool_bar->addAction ("E&xit", window, SLOT (close ()));
-  action->setShortcut (QString ("Ctrl+X"));
-*/
-    if (graph->parse_command_line(argc, argv)) {
-        QMessageBox::warning(0, "Wrong input arguments!", "Wrong input arguments!");
-        return -1;
+    action = tool_bar->addAction ("&n*2", graph, SLOT (enlarge_n ()));
+    action->setShortcut (QString ("4")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
+
+
+    action = tool_bar->addAction ("&n/2", graph, SLOT (shrink_n ()));
+    action->setShortcut (QString ("5")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
+
+
+    action = tool_bar->addAction ("f_n/2+", graph, SLOT (fluctuate_plus ()));
+    action->setShortcut (QString ("6")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
+
+
+    action = tool_bar->addAction ("f_n/2-", graph, SLOT (flustuate_minus ()));
+    action->setShortcut (QString ("7")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
+
+
+    action = tool_bar->addAction ("&m*2", graph, SLOT (enlarge_m ()));
+    action->setShortcut (QString ("6")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
+
+
+    action = tool_bar->addAction ("&m/2", graph, SLOT (shrink_m ()));
+    action->setShortcut (QString ("9")); 
+    QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
+
+
+    action = tool_bar->addAction ("E&xit", window, SLOT (close ()));
+    action->setShortcut (QString ("Ctrl+X"));
+
+    switch (graph->parse_command_line(argc, argv)) {
+        case status::ok:
+            break;
+        case status::error_data:
+            QMessageBox::warning(0, "Wrong input arguments!", "Wrong input arguments!");
+            return -1;
+        case status::error_mem:
+            QMessageBox::warning(0, "Cannot allocate memory!", "Cannot allocate memory!");
+            return -2;
+        default:
+            QMessageBox::warning(0, "Unknown error!", "Unknown error!");
+            return -3;
     }
 
     tool_bar->setMaximumHeight(30);

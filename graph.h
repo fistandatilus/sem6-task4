@@ -5,6 +5,13 @@
 #include <QtWidgets/QtWidgets>
 #include "approximation.h"
 
+#define DEFAULT_A -10
+#define DEFAULT_B 10
+#define DEFAULT_N 10
+#define FUNCTION_AMOUNT 8
+#define MODE_AMOUNT 3
+#define VERY_SMALL_NUMBER 1e-100
+
 class Graph : public QWidget
 {
     Q_OBJECT
@@ -12,6 +19,10 @@ class Graph : public QWidget
 private:
     int func_id = 0;
     const char *f_name = nullptr;
+    double center_x = 0;
+    double h_x = 1;
+    double center_y = 0;
+    double h_y = 1;
     double a = -1;
     double b = 1;
     double c = -1;
@@ -22,14 +33,13 @@ private:
     size_t my = 1;
     int mode = 0;
     int p = 0;
-    double (*f)(double) = nullptr;
-    double max_f = 0;
-    double min_f = 0;
-    double max_approx = 0;
-    double min_approx = 0;
+    double (*f)(double, double) = nullptr;
+    double max[MODE_AMOUNT];
+    double min[MODE_AMOUNT];
+    arguments args;
     approximation *approx;
     TrivialApproximation trivapp;
-    DifferenceApproximation difapp;
+    DifferenceApproximation diffapp;
 
 public:
     Graph(QWidget *parent);
@@ -41,7 +51,7 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
-    int parse_command_line(int argc, char *argv[]);
+    status parse_command_line(int argc, char *argv[]);
     QPointF m2w(double x_m, double y_m);
     double x_w2m(double x_w);
 
@@ -54,12 +64,15 @@ public slots:
     void shrink_n();
     void fluctuate_plus();
     void flustuate_minus();
+    void enlarge_m();
+    void shrink_m();
     void eval_y_max_min();
-    void approx_ready(approximation *);
+    void ready(approximation *);
 
 signals:
     void set_label(const QString &);
-    void calculate(approximation *);
+    void calculate(approximation *, arguments &);
+    void enable(bool);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -69,12 +82,5 @@ protected:
 };
 
 QColor color_maker(double a);
-
-#define DEFAULT_A -10
-#define DEFAULT_B 10
-#define DEFAULT_N 10
-#define FUNCTION_AMOUNT 7
-#define MODE_AMOUNT 4
-#define VERY_SMALL_NUMBER 1e-100
 
 #endif

@@ -14,32 +14,44 @@ void Graph::change_mode()
 
 void Graph::enlarge_segment()
 {
-    a *= 2;
-    b *= 2;
+    h_x *= 2;
+    a = center_x - h_x;
+    b = center_x + h_x;
+    h_y *= 2;
+    c = center_y - h_y;
+    d = center_y + h_y;
     update_func();
     update();
 }
 
 void Graph::shrink_segment()
 {
-    a /= 2;
-    b /= 2;
+    h_x *= 0.5;
+    a = center_x - h_x;
+    b = center_x + h_x;
+    h_y *= 0.5;
+    c = center_y - h_y;
+    d = center_y + h_y;
     update_func();
     update();
 }
 
 void Graph::enlarge_n()
 {
-    n *= 2;
+    nx *= 2;
+    ny *= 2;
     update_func();
     update();
 }
 
 void Graph::shrink_n()
 {
-    n /= 2;
-    if (n < 2)
-        n = 2;
+    nx /= 2;
+    if (nx < 1)
+        nx = 1;
+    ny /= 2;
+    if (ny < 1)
+        ny = 1;
     update_func();
     update();
 }
@@ -55,5 +67,33 @@ void Graph::flustuate_minus()
 {
     p--;
     update_func();
+    update();
+}
+
+void Graph::enlarge_m()
+{
+    mx *= 2;
+    my *= 2;
+    update_func();
+    update();
+}
+
+void Graph::shrink_m()
+{
+    mx /= 2;
+    if (mx < 1)
+        mx = 1;
+    my /= 2;
+    if (my < 1)
+        my = 1;
+    update_func();
+    update();
+}
+
+void Graph::ready(approximation *approximation)
+{
+    approx = approximation;
+    trivapp.init(f);
+    diffapp.init(approx);
     update();
 }
