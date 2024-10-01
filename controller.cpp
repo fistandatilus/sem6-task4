@@ -15,7 +15,7 @@ Controller::Controller(Graph *parent)
     ready = true;
     tid = nullptr;
     connect(parent, SIGNAL(calculate(arguments)), SLOT(calculate(arguments)), Qt::QueuedConnection); 
-    connect(this, SIGNAL(done(arguments)), parent, SLOT(ready_approx(arguments)));
+    connect(this, SIGNAL(done(arguments)), parent, SLOT(ready_approx(arguments)), Qt::QueuedConnection);
 }
 
 void Controller::calculate( arguments args) {

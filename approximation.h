@@ -8,7 +8,7 @@
 class Paintable
 {
     public:
-    virtual double operator()(double x, double y) = 0;
+    virtual double operator()(double x, double y) const = 0;
 };
 
 class approximation : public Paintable
@@ -36,7 +36,7 @@ protected:
   public:
     status init(double a, double b, double c, double d, size_t nx, size_t ny, double eps, int p, int thread);
     status init_function(double (*f)(double, double), int max_it, int &it, double eps, int p, int thread);
-    virtual double operator()(double x, double y);
+    virtual double operator()(double x, double y) const;
     double residual1(int p, int thread);
     double residual2(int p, int thread);
     double residual3(int p, int thread);
@@ -103,7 +103,7 @@ public:
     void set_f(double (*f)(double, double)) {
         this->f = f;
     }
-    virtual double operator()(double x, double y) {
+    virtual double operator()(double x, double y) const {
 //      if (f)
             return f(x, y);
 //        return 0;
@@ -129,7 +129,7 @@ public:
         approx = app;
         f = f_ptr;
     }
-    virtual double operator()(double x, double y) {
+    virtual double operator()(double x, double y) const {
         return fabs(f(x, y) - approx->operator()(x, y));
     }
 };

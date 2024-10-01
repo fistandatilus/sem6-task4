@@ -1,6 +1,6 @@
 #include "approximation.h"
 
-double approximation::operator()(double x, double y)
+double approximation::operator()(double x, double y) const
 {
     if (x < a || x > b || y < c || y > d)
         return 0;

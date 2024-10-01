@@ -40,6 +40,8 @@ void Graph::enlarge_n()
 {
     nx *= 2;
     ny *= 2;
+    args.nx = nx;
+    args.ny = ny;
     update_func();
     update();
 }
@@ -52,6 +54,8 @@ void Graph::shrink_n()
     ny /= 2;
     if (ny < 1)
         ny = 1;
+    args.nx = nx;
+    args.ny = ny;
     update_func();
     update();
 }

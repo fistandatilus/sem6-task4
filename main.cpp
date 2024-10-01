@@ -14,7 +14,8 @@ int main(int argc, char *argv[])
     QMainWindow *window = new QMainWindow;
     QMenuBar *tool_bar = new QMenuBar(window);
     QStatusBar *status_bar = new QStatusBar(window);
-    QLabel *label = new QLabel(status_bar);
+    QLabel *label = new QLabel;
+    status_bar->insertWidget(0, label, 1);
     Graph *graph = new Graph(window);
 
     QAction *action;

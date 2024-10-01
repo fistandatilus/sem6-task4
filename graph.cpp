@@ -127,10 +127,12 @@ void Graph::update_func()
 { 
     printf("before emit\n");
     emit enable(false);
+    update();
     args.k = func_id;
     printf("%le\n", args.a);
     emit calculate(args);
     printf("after emit\n");
+    update();
 }
 
 void Graph::eval_y_max_min()
@@ -150,17 +152,17 @@ void Graph::eval_y_max_min()
     for (size_t i = 0; i < mx; i++)
         for (size_t j = 0; j < my; j++) {
             for (int k = 0; k < 2; k++) {
-                double x = a + hx/3 + k*hx/3;
-                double y = c + 2*hy/3 - k*hy/3;
+                double x = a + i*hx + hx/3 + k*hx/3;
+                double y = c + j*hy + 2*hy/3 - k*hy/3;
                 value[0] = f(x, y);
                 value[1] = pf(x, y);
                 value[2] = df(x, y);
                 for (int l = 0; l < MODE_AMOUNT; l++)
                 {
-                    if (value[i] > max[i])
-                        max[i] = value[i];
-                    else if (value[i] < min[i])
-                        min[i] = value[i];
+                    if (value[l] > max[l])
+                        max[l] = value[l];
+                    else if (value[l] < min[l])
+                        min[l] = value[l];
                 }
             }
         }
@@ -179,6 +181,7 @@ void Graph::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     QString label;
+    printf("entered paint\n");
     if(!enabled)
     {
         emit set_label("Calculating approximation");
@@ -199,11 +202,11 @@ void Graph::paintEvent(QPaintEvent * /* event */)
         paint_approx(diffapp, painter);
         break;
     }
-    printf("maximum of |f| = %le ", max);
+    printf("maximum of |f| = %le \n", max);
     label.append(QString::asprintf("maximum of |f| = %le", max));
     // render function name
-    label.append(QString::asprintf("%s nx = %lu, ny = %lu a = %.2e b = %.2e, p = %d, mode = %d",
-                                       f_name, nx, ny,  a, b, p, mode));
+    label.append(QString::asprintf("%s nx = %lu, ny = %lu, mx = %lu, my = %lu\n a = %.2e b = %.2e, c = %.2e, d = %.2e, p = %d, mode = %d",
+                                       f_name, nx, ny, mx, my, a, b, c, d, p, mode));
     emit set_label(label);
 }
 
@@ -218,18 +221,21 @@ double clamp(double x, double a, double b) {
 }
 
 QColor color_maker(double a) {
-    unsigned int r = a * 255;
-    unsigned int g = a * 255;
-    unsigned int b = a * 255;
+    unsigned int r = clamp(2*a - 1) * 255;
+    unsigned int g = clamp(1 - fabs(2*a - 1))* 255;
+    unsigned int b = clamp(1 - 2*a) * 255;
 
     return QColor(r, g, b);
 }
 
 void Graph::paint_approx(Paintable &approx, QPainter &painter)
 {
+    painter.setPen(Qt::NoPen);
     QPointF triangle[3];
     double hx = (b - a) / mx;
     double hy = (d - c) / my;
+    double norm = max[mode]- min[mode];
+    norm = norm > VERY_SMALL_NUMBER ? norm : 1;
     for (size_t i = 0; i < mx; i++)
         for (size_t j = 0; j < my; j++) {
             triangle[0] = m2w(a + hx*i, c + hy*j);
@@ -237,7 +243,7 @@ void Graph::paint_approx(Paintable &approx, QPainter &painter)
             triangle[2] = m2w(a + hx*(i + 1), c + hy*(j + 1));
 
             double value;
-            value = (approx(a + hx*(i + 2./3), c + hy*(j + 1./3)) - min[mode])/(max[mode]- min[mode]);
+            value = (approx(a + hx*(i + 2./3), c + hy*(j + 1./3)) - min[mode])/norm;
             QColor color = color_maker(value);
             QBrush brush(color);
             painter.setBrush(brush);
@@ -245,7 +251,7 @@ void Graph::paint_approx(Paintable &approx, QPainter &painter)
             painter.drawConvexPolygon(triangle, 3);
 
             triangle[1] = m2w(a + hx*i, c + hy*(j + 1));
-            value = (approx(a + hx*(i + 1./3), c + hy*(j + 2./3)) - min[mode])/(max[mode]- min[mode]);     
+            value = (approx(a + hx*(i + 1./3), c + hy*(j + 2./3)) - min[mode])/norm;     
             color = color_maker(value);
             brush.setColor(color);
             painter.setBrush(brush);
