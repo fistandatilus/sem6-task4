@@ -146,8 +146,6 @@ struct arguments
     double r2;
     double r3;
     double r4;
-    double max;
-    double min;
     double t1;
     double t2;
     int it;
@@ -181,6 +179,30 @@ struct arguments
         this->k = k;
         this->p = p;
         this->thread = thread;
+    }
+    
+    arguments &operator=(arguments &) = delete;
+    arguments &operator=(arguments && arg) {
+        approx = arg.approx;
+        a = arg.a;
+        b = arg.b;
+        c = arg.c;
+        d = arg.d;
+        eps = arg.eps;
+        nx = arg.nx;
+        ny = arg.ny;
+        max_it = arg.max_it;
+        k = arg.k;
+        r1 = arg.r1;
+        r2 = arg.r2;
+        r3 = arg.r3;
+        r4 = arg.r4;
+        t1 = arg.t1;
+        t2 = arg.t2;
+        it = arg.it;
+        stat = arg.stat;
+        p = arg.p;
+        approx = arg.approx;
     }
 };
 

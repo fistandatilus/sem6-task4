@@ -16,6 +16,12 @@ Controller::Controller(Graph *parent)
     connect(this, SIGNAL(ready(approx *)), parent, SLOT(ready_approx(approx *)));
 }
 
+void Controller::calculate(approximation *approx, arguments &args) {
+    if (state != State::ready)
+        return;
+    
+}
+
 void *thread_func(void *void_arg);
 
 void do_threads(pthread_t *tid, arguments *arg, int p, const char *exe_name, int task);

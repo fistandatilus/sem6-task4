@@ -25,10 +25,10 @@ public:
     Controller(Graph *parent);
 
 public slots:
-    void calculate(approximation *);
+    void calculate(approximation *, arguments &);
 
 signals:
-    void ready(approximation *);
+    void ready(approximation *, arguments &);
 
 
 

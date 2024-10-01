@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
 
 
-    action = tool_bar->addAction ("f_n/2-", graph, SLOT (flustuate_minus ()));
+    action = tool_bar->addAction ("f_n/2-", graph, SLOT (fluctuate_minus ()));
     action->setShortcut (QString ("7")); 
     QObject::connect(graph, SIGNAL(Graph::enable(bool)), action, SLOT(QAction::setEnabled(bool)));
 
@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
     window->setWindowTitle("Graph");
 
     QObject::connect(graph, SIGNAL(Graph::set_label(QString)), label, SLOT(QLabel::setText(QString)));
+    QObject::connect(graph, SIGNAL(Graph::fatal_error(bool)), window, SLOT(QMainWindow::close()));
 
     window->show();
     app.exec();

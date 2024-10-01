@@ -63,7 +63,7 @@ public slots:
     void enlarge_n();
     void shrink_n();
     void fluctuate_plus();
-    void flustuate_minus();
+    void fluctuate_minus();
     void enlarge_m();
     void shrink_m();
     void eval_y_max_min();
@@ -73,6 +73,7 @@ signals:
     void set_label(const QString &);
     void calculate(approximation *, arguments &);
     void enable(bool);
+    void fatal_error();
 
 protected:
     void paintEvent(QPaintEvent *event);

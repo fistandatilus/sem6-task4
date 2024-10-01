@@ -63,7 +63,7 @@ void Graph::fluctuate_plus()
     update();
 }
 
-void Graph::flustuate_minus()
+void Graph::fluctuate_minus()
 {
     p--;
     update_func();
