@@ -74,7 +74,7 @@ void Graph::enlarge_m()
 {
     mx *= 2;
     my *= 2;
-    update_func();
+    eval_y_max_min();
     update();
 }
 
@@ -86,14 +86,26 @@ void Graph::shrink_m()
     my /= 2;
     if (my < 1)
         my = 1;
-    update_func();
+    eval_y_max_min();
     update();
 }
 
-void Graph::ready(approximation *approximation)
+void Graph::ready_approx(arguments args)
 {
-    approx = approximation;
+    if (args.stat != status::ok && args.stat != status::error_out_of_iterations)
+    {
+        printf("something went wrong\n");
+        emit fatal_error();
+        return;
+    }
+    printf("recieved correct approx\n");
     trivapp.init(f);
-    diffapp.init(approx);
+    diffapp.init(approx, f);
+    eval_y_max_min();
+    emit enable(true);
     update();
+}
+
+void Graph::set_enable(bool state) {
+    enabled = state;
 }

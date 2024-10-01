@@ -5,6 +5,7 @@
 
 #include "graph.h"
 #include "functions.h"
+#include "controller.h"
 
 Graph::Graph(QWidget *parent)
     : QWidget(parent)
@@ -19,6 +20,7 @@ Graph::Graph(QWidget *parent)
 
     func_id = 0;
     approx = nullptr;
+    connect(this, SIGNAL(enable(bool)), this, SLOT(set_enable(bool)));
 }
 
 QSize Graph::minimumSizeHint() const
@@ -35,7 +37,7 @@ status Graph::parse_command_line(int argc, char *argv[])
 {
     int k, max_it, threads;
     double eps;
-    if (!(argc == 11 && sscanf(argv[1], "%lf", &a) == 1 && sscanf(argv[2], "%lf", &b) == 1
+    if (!(argc == 13 && sscanf(argv[1], "%lf", &a) == 1 && sscanf(argv[2], "%lf", &b) == 1
           && sscanf(argv[3], "%lf", &c) == 1 && sscanf(argv[4], "%lf", &d) == 1
           && sscanf(argv[5], "%lu", &nx) == 1 && nx > 0 && sscanf(argv[6], "%lu", &ny) == 1 && ny > 0
           && sscanf(argv[7], "%lu", &mx) == 1 && mx > 0 && sscanf(argv[8], "%lu", &my) == 1 && my > 0
@@ -62,12 +64,15 @@ status Graph::parse_command_line(int argc, char *argv[])
         printf("Cannot allocate memory\n");
         return status::error_mem;
     }
+    Controller *contr = new Controller(this);
+    contr->set_argv0(argv[0]);
     args.set(
         approx,
         a, b, c, d,
         eps, nx, ny, 
-        max_it, k, p, 0
+        max_it, k, threads, 0
     );
+    printf("created approx\n");
     set_func(k);
 
     return status::ok;
@@ -112,16 +117,20 @@ void Graph::set_func(int id)
         f = f7;
         break;
     }
+    printf("func set\n");
     update_func();
+    printf("update_func done\n");
     update();
 }
 
 void Graph::update_func()
-{
-    emit calculate(approx, args);
-    approx = 0;
-    trivapp.init(f);
-    diffapp.init(approx);
+{ 
+    printf("before emit\n");
+    emit enable(false);
+    args.k = func_id;
+    printf("%le\n", args.a);
+    emit calculate(args);
+    printf("after emit\n");
 }
 
 void Graph::eval_y_max_min()
@@ -130,18 +139,16 @@ void Graph::eval_y_max_min()
     DifferenceApproximation &df = diffapp;
     double hx = (b - a)/mx;
     double hy = (d - c)/my;
-    double max[MODE_AMOUNT] = {
-         f(a + hx/3, c + 2*hy/3),
-         pf(a + hx/3, c + 2*hy/3),
-         df(a + hx/3, c + 2*hy/3),
-    };
-    double min[MODE_AMOUNT];
+    max[0] = f(a + hx/3, c + 2*hy/3);
+    max[1] = pf(a + hx/3, c + 2*hy/3);
+    max[2] = df(a + hx/3, c + 2*hy/3);
+
     for (int i = 0; i < MODE_AMOUNT; i++) {
         min[i] = max[i];
     }
     double value[MODE_AMOUNT];
-    for (int i = 0; i < mx; i++)
-        for (int j = 0; j < my; j++) {
+    for (size_t i = 0; i < mx; i++)
+        for (size_t j = 0; j < my; j++) {
             for (int k = 0; k < 2; k++) {
                 double x = a + hx/3 + k*hx/3;
                 double y = c + 2*hy/3 - k*hy/3;
@@ -172,12 +179,12 @@ void Graph::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     QString label;
-    if(!approx)
+    if(!enabled)
     {
-        emit enable(false);
         emit set_label("Calculating approximation");
         return;
     }
+
     //draw functions
     double max;
     max = fabs(this->max[mode]) > fabs(this->min[mode]) ? fabs(this->max[mode]) : fabs(this->min[mode]);
@@ -211,9 +218,9 @@ double clamp(double x, double a, double b) {
 }
 
 QColor color_maker(double a) {
-    unsigned int r = clamp(2*a - 1) * 255;
-    unsigned int g = clamp(1 - fabs(2*a - 1))* 255;
-    unsigned int b = clamp(1 - 2*a) * 255;
+    unsigned int r = a * 255;
+    unsigned int g = a * 255;
+    unsigned int b = a * 255;
 
     return QColor(r, g, b);
 }

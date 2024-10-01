@@ -1,49 +1,48 @@
-#include <fenv.h>
 #include <pthread.h>
 #include <sched.h>
 #include <sys/sysinfo.h>
 
 #include "controller.h"
-
-
-Controller::Controller(Graph *parent) 
-    : QObject(parent) {
-    approx = nullptr;
-    arg = nullptr;
-    state = State::standby;
-    tid = nullptr;
-    connect(parent, SIGNAL(Graph::calculate(approximation *, arguments &)), SLOT(calculate(approximation *, arguments &)));
-    connect(this, SIGNAL(ready(approx *)), parent, SLOT(ready_approx(approx *)));
-}
-
-void Controller::calculate(approximation *approx, arguments &args) {
-    if (state != State::ready)
-        return;
-    
-}
-
-void *thread_func(void *void_arg);
+#include "functions.h"
 
 void do_threads(pthread_t *tid, arguments *arg, int p, const char *exe_name, int task);
+void *thread_func(void *void_arg);
 
-int main(int argc, char *argv[])
-{
-    feenableexcept(FE_ALL_EXCEPT ^ FE_INEXACT);
-    int p, max_it, k, task = 8;
-    double eps, a, b, c, d;
-    size_t nx, ny;
+Controller::Controller(Graph *parent) 
+    : QObject((QObject *)parent) {
+    approx = parent->approx;
+    arg = nullptr;
+    ready = true;
+    tid = nullptr;
+    connect(parent, SIGNAL(calculate(arguments)), SLOT(calculate(arguments)), Qt::QueuedConnection); 
+    connect(this, SIGNAL(done(arguments)), parent, SLOT(ready_approx(arguments)));
+}
 
-    }
+void Controller::calculate( arguments args) {
+    printf("signal recieved\n");
+    if (!ready)
+        return;
+    ready = false;
+    int p = args.p;
+    int max_it = args.max_it;
+    int k = args.k, task = 8;
+    double eps = args.eps;
+    double a = args.a;
+    double b = args.b;
+    double c = args.c;
+    double d = args.d;
+    size_t nx = args.nx, ny = args.ny;
+    tid = new pthread_t[p];
+    arg = new arguments[p];
+    
+    printf("args is read\n");
 
-    pthread_t *tid = new pthread_t[p];
-    arguments *arg = new arguments[p];
     if (tid && arg) {
-        approximation approx;
-
         for (int i = 0; i < p; i++)
-            arg[i].set(&approx, a, b, c, d, eps, nx, ny, max_it, k, p, i);
-        do_threads(tid, arg, p, argv[0], task);
+            arg[i].set(approx, a, b, c, d, eps, nx, ny, max_it, k, p, i);
+        do_threads(tid, arg, p, argv0, task);
     }
+    args.stat = arg->stat;
     int ret = 0;
     if (tid)
         delete[] tid;
@@ -53,17 +52,25 @@ int main(int argc, char *argv[])
         delete[] arg;
     else
         ret = -2;
-    return ret;
+    if (ret) {
+        printf("Cannot allocate memory!\n");
+        args.stat = status::error_mem;
+    }
+    printf("threads done\n");
+    emit done(args);
+    ready = true;
 }
 
 void do_threads(pthread_t *tid, arguments *arg, int p, const char *exe_name, int task)
 {
+    printf("started threads\n");
     for (int i = 1; i < p; i++)
         if (pthread_create(tid + i, 0, thread_func, arg + i)) {
             printf("Cannot create thread!\n");
             return;
         }
     thread_func(arg + 0);
+    printf("thread_func done\n");
 
     for (int k = 1; k < p; k++)
         pthread_join(tid[k], 0);
@@ -135,15 +142,19 @@ void *thread_func(void *void_arg)
     CPU_SET(cpu_id, &cpu);
     pthread_t tid = pthread_self();
     pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpu);
+    printf("in thread func args read\n");
 
     reduce_sum<double>(p);
+    printf("in thread func sum reduced\n");
     t1 = get_full_time();
     stat = approx->init(a, b, c, d, nx, ny, eps, p, thread);
+    printf("in thread func approx inited\n");
     if (stat != status::ok)
         return nullptr;
     double (*f)(double, double);
     set_func(&f, k);
     stat = approx->init_function(f, max_it, it, eps, p, thread);
+    printf("in thread done init_function\n");
     reduce_sum<double>(p);
     t2 = get_full_time();
     t1 = t2 - t1;

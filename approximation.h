@@ -1,3 +1,5 @@
+#include <QMetaType>
+
 #include "msr.h"
 
 #ifndef APPROXIMATION_H
@@ -6,7 +8,7 @@
 class Paintable
 {
     public:
-    virtual double operator()(double x, double y);
+    virtual double operator()(double x, double y) = 0;
 };
 
 class approximation : public Paintable
@@ -106,53 +108,56 @@ public:
             return f(x, y);
 //        return 0;
     }
+    friend class DifferenceApproximation;
 };
 
 class DifferenceApproximation : public Paintable
 {
 private:
     approximation *approx;
-
+    double (*f)(double, double);
 public:
     DifferenceApproximation() = default;
-    DifferenceApproximation(approximation *app) {
+    DifferenceApproximation(approximation *app, double (*f_ptr)(double, double)) {
         approx = app;
+        f = f_ptr;
     }
     ~DifferenceApproximation() {
         approx = nullptr;
     }
-    void init(approximation *approx) {
-        this->approx = approx;
+    void init(approximation *app, double (*f_ptr)(double, double)) {
+        approx = app;
+        f = f_ptr;
     }
     virtual double operator()(double x, double y) {
-        return fabs((approx->f)(x, y) - approx->operator()(x, y));
+        return fabs(f(x, y) - approx->operator()(x, y));
     }
 };
 
 struct arguments
 {
-    approximation *approx;
-    double a;
-    double b;
-    double c;
-    double d;
-    double eps;
-    size_t nx;
-    size_t ny;
-    int max_it;
-    int k;
+    approximation *approx = nullptr;
+    double a = 0;
+    double b = 0;
+    double c = 0;
+    double d = 0;
+    double eps = 0;
+    size_t nx = 0;
+    size_t ny = 0;
+    int max_it = 0;
+    int k = 0;
 
-    double r1;
-    double r2;
-    double r3;
-    double r4;
-    double t1;
-    double t2;
-    int it;
+    double r1 = 0;
+    double r2 = 0;
+    double r3 = 0;
+    double r4 = 0;
+    double t1 = 0;
+    double t2 = 0;
+    int it = 0;
     status stat;
 
-    int p;
-    int thread;
+    int p = 0;
+    int thread = 0;
 
     void set(approximation *approx,
              double a,
@@ -180,9 +185,9 @@ struct arguments
         this->p = p;
         this->thread = thread;
     }
-    
-    arguments &operator=(arguments &) = delete;
-    arguments &operator=(arguments && arg) {
+
+    arguments() = default;
+    arguments(const arguments & arg) {
         approx = arg.approx;
         a = arg.a;
         b = arg.b;
@@ -204,6 +209,8 @@ struct arguments
         p = arg.p;
         approx = arg.approx;
     }
+    ~arguments() = default;
 };
+Q_DECLARE_METATYPE(arguments)
 
 #endif

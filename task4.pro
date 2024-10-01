@@ -4,7 +4,8 @@ HEADERS       = approximation.h \
 								functions.h \
 								graph.h \
 								msr.h \
-								thread_related.h
+								thread_related.h \
+								controller.h
 
 SOURCES       = approximation.cpp \
 								approximation_evaluation.cpp \

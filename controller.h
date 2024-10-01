@@ -10,25 +10,22 @@
 class Controller : public QObject {
     Q_OBJECT
 
-    enum class State
-    {
-        standby,
-        evaluating,
-    };
 private:
     approximation *approx = nullptr;
-    State state = State::standby;
+    bool ready = true;
     pthread_t *tid = nullptr;
     arguments *arg = nullptr;
+    const char *argv0 = nullptr;
 
 public:
     Controller(Graph *parent);
+    void set_argv0(const char *ptr) {argv0 = ptr;}
 
 public slots:
-    void calculate(approximation *, arguments &);
+    void calculate(arguments);
 
 signals:
-    void ready(approximation *, arguments &);
+    void done(arguments);
 
 
 

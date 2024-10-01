@@ -32,6 +32,7 @@ private:
     size_t mx = 1;
     size_t my = 1;
     int mode = 0;
+    bool enabled = true;
     int p = 0;
     double (*f)(double, double) = nullptr;
     double max[MODE_AMOUNT];
@@ -67,11 +68,12 @@ public slots:
     void enlarge_m();
     void shrink_m();
     void eval_y_max_min();
-    void ready(approximation *);
+    void ready_approx(arguments);
+    void set_enable(bool);
 
 signals:
     void set_label(const QString &);
-    void calculate(approximation *, arguments &);
+    void calculate(arguments);
     void enable(bool);
     void fatal_error();
 
@@ -80,6 +82,8 @@ protected:
     void paint_approx(Paintable &approx, QPainter &painter);
     void set_func(int id);
     void update_func();
+
+friend class Controller;
 };
 
 QColor color_maker(double a);

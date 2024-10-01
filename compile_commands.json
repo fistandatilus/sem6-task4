@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/fistandatilus/evm/6sem/task4",
-  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/fistandatilus/evm/6sem/task4/untitled_autogen/include -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -std=gnu++17 -fPIC -o CMakeFiles/untitled.dir/untitled_autogen/mocs_compilation.cpp.o -c /home/fistandatilus/evm/6sem/task4/untitled_autogen/mocs_compilation.cpp",
-  "file": "/home/fistandatilus/evm/6sem/task4/untitled_autogen/mocs_compilation.cpp",
-  "output": "CMakeFiles/untitled.dir/untitled_autogen/mocs_compilation.cpp.o"
-}
-]
