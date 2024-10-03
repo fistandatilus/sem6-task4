@@ -15,7 +15,7 @@ double approximation::operator()(double x, double y) const
 
     double kx = x_loc / hx;
     double ky = y_loc / hy;
-    if (x_loc / hx + y_loc / hy < 0.5) {
+    if (kx + ky < 1) {
         double ka = 1 - ky - kx;
         double kb = kx;
         double kc = ky;

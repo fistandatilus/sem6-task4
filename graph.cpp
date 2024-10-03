@@ -232,6 +232,9 @@ void Graph::paint_approx(Paintable &approx, QPainter &painter)
 {
     painter.setPen(Qt::NoPen);
     QPointF triangle[3];
+    size_t mx = this->mx < (size_t) width() ? this->mx : width();
+    size_t my = this->my < (size_t) height() ? this->my : height();
+    printf("mx = %ld, width = %d\n", mx, width());
     double hx = (b - a) / mx;
     double hy = (d - c) / my;
     double norm = max[mode]- min[mode];
