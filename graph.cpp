@@ -172,7 +172,7 @@ void Graph::eval_y_max_min()
 QPointF Graph::m2w(double x_m, double y_m)
 {
     double x_w = (x_m - a) / (b - a) * width();
-    double y_w = (y_m - c) / (d - c) * height();
+    double y_w = (d - y_m) / (d - c) * height();
     return QPointF(x_w, y_w);
 }
 
