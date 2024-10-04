@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
     action = tool_bar->addAction ("E&xit", window, SLOT (close ()));
     action->setShortcut (QString ("Ctrl+X"));
 
-    printf("1\n");
     qRegisterMetaType<arguments>();
 
     switch (graph->parse_command_line(argc, argv)) {
@@ -88,7 +87,6 @@ int main(int argc, char *argv[])
             QMessageBox::warning(0, "Unknown error!", "Unknown error!");
             return -3;
     }
-    printf("after parse\n");
 
     tool_bar->setMaximumHeight(30);
 

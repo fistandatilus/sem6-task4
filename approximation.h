@@ -29,12 +29,13 @@ class approximation : public Paintable
     double d = 0;
     size_t nx = 0;
     size_t ny = 0;
+    int error;
 
 protected:
     double (*f)(double, double) = nullptr;
 
   public:
-    status init(double a, double b, double c, double d, size_t nx, size_t ny, double eps, int p, int thread);
+    status init(double a, double b, double c, double d, size_t nx, size_t ny, double eps, int p, int thread, int error);
     status init_function(double (*f)(double, double), int max_it, int &it, double eps, int p, int thread);
     virtual double operator()(double x, double y) const;
     double residual1(int p, int thread);
@@ -146,6 +147,7 @@ struct arguments
     size_t ny = 0;
     int max_it = 0;
     int k = 0;
+    int error = 0;
 
     double r1 = 0;
     double r2 = 0;
@@ -170,7 +172,8 @@ struct arguments
              int max_it,
              int k,
              int p,
-             int thread)
+             int thread,
+             int error)
     {
         this->approx = approx;
         this->a = a;
@@ -184,6 +187,7 @@ struct arguments
         this->k = k;
         this->p = p;
         this->thread = thread;
+        this->error = error;
     }
 
     arguments() = default;
@@ -208,6 +212,7 @@ struct arguments
         stat = arg.stat;
         p = arg.p;
         approx = arg.approx;
+        error = arg.error;
     }
     ~arguments() = default;
 };

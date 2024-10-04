@@ -18,7 +18,8 @@ private:
     const char *argv0 = nullptr;
 
 public:
-    Controller(Graph *parent);
+    Controller(approximation *approx);
+    ~Controller() = default;
     void set_argv0(const char *ptr) {argv0 = ptr;}
 
 public slots:

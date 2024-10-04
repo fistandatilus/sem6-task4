@@ -53,14 +53,14 @@ void Graph::shrink_n()
 
 void Graph::fluctuate_plus()
 {
-    p++;
+    error++;
     update_func();
     update();
 }
 
 void Graph::fluctuate_minus()
 {
-    p--;
+    error--;
     update_func();
     update();
 }
@@ -89,11 +89,9 @@ void Graph::ready_approx(arguments args)
 {
     if (args.stat != status::ok && args.stat != status::error_out_of_iterations)
     {
-        printf("something went wrong\n");
         emit fatal_error();
         return;
     }
-    printf("recieved correct approx\n");
     trivapp.init(f);
     diffapp.init(approx, f);
     eval_y_max_min();

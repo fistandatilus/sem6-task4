@@ -1,7 +1,7 @@
 #include "approximation.h"
 
 status approximation::init(
-    double a, double b, double c, double d, size_t nx, size_t ny, double eps, int p, int thread)
+    double a, double b, double c, double d, size_t nx, size_t ny, double eps, int p, int thread, int error)
 {
     size_t n = (nx + 1) * (ny + 1);
     size_t size = size_by_nx_ny(nx, ny);
@@ -13,6 +13,7 @@ status approximation::init(
         this->d = d;
         this->nx = nx;
         this->ny = ny;
+        this->error = error;
         coeffs = new double[n];
         v = new double[n];
         u = new double[n];
@@ -69,7 +70,7 @@ status approximation::init(
 status approximation::init_function(
     double (*f)(double, double), int max_it, int &it, double eps, int p, int thread)
 {
-    fill_right_side(nx, ny, right_side, p, thread, a, b, c, d, f);
+    fill_right_side(nx, ny, right_side, p, thread, a, b, c, d, f, error);
     //  if (thread == 0)
     //    print_vec(right_side, (nx+1)*(ny+1), (nx+1)*(ny+1));
     this->f = f;

@@ -63,15 +63,20 @@ status Graph::parse_command_line(int argc, char *argv[])
         printf("Cannot allocate memory\n");
         return status::error_mem;
     }
-    Controller *contr = new Controller(this);
+    Controller *contr = new Controller(approx);
+    contr->moveToThread(&controller_thread);
     contr->set_argv0(argv[0]);
+    connect(&controller_thread, &QThread::finished, contr, &QObject::deleteLater);
+    connect(this, &Graph::calculate, contr, &Controller::calculate, Qt::QueuedConnection); 
+    connect(contr, &Controller::done, this, &Graph::ready_approx, Qt::QueuedConnection);
+    controller_thread.start();
     args.set(
         approx,
         a, b, c, d,
         eps, nx, ny, 
-        max_it, k, threads, 0
+        max_it, k,
+        threads, 0, error
     );
-    printf("created approx\n");
     set_func(k);
 
     return status::ok;
@@ -116,21 +121,16 @@ void Graph::set_func(int id)
         f = f7;
         break;
     }
-    printf("func set\n");
     update_func();
-    printf("update_func done\n");
     update();
 }
 
 void Graph::update_func()
 { 
-    printf("before emit\n");
     emit enable(false);
     args.k = func_id;
-    printf("%le\n", args.a);
+    args.error = error;
     emit calculate(args);
-    printf("after emit\n");
-    update();
 }
 
 void Graph::eval_y_max_min()
@@ -196,7 +196,6 @@ void Graph::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     QString label;
-    printf("entered paint\n");
     if(!enabled)
     {
         emit set_label("Calculating approximation");
@@ -218,10 +217,10 @@ void Graph::paintEvent(QPaintEvent * /* event */)
         break;
     }
     printf("maximum of |f| = %le \n", max);
-    label.append(QString::asprintf("maximum of |f| = %le", max));
+    label.append(QString::asprintf("maximum of |f| = %le ", max));
     // render function name
     label.append(QString::asprintf("%s nx = %lu, ny = %lu, mx = %lu, my = %lu\n a = %.2e b = %.2e, c = %.2e, d = %.2e, p = %d, mode = %d",
-                                       f_name, nx, ny, mx, my, draw_a, draw_b, draw_c, draw_d, p, mode));
+                                       f_name, nx, ny, mx, my, draw_a, draw_b, draw_c, draw_d, error, mode));
     emit set_label(label);
 }
 
@@ -249,7 +248,6 @@ void Graph::paint_approx(Paintable &approx, QPainter &painter)
     QPointF triangle[3];
     size_t mx = this->mx < (size_t) width() ? this->mx : width();
     size_t my = this->my < (size_t) height() ? this->my : height();
-    printf("mx = %ld, width = %d\n", mx, width());
     double a = draw_a;
     double b = draw_b;
     double c = draw_c;

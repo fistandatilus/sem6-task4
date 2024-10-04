@@ -25,7 +25,7 @@ int form_preconditioner(msr &a, msr &precond, double *diag, double eps, int p, i
     start_and_size(p, thread, a.n, start, stride);
     eps = a.norm * eps;
     if (stride != 0) {
-        for (size_t i = start; i - start < stride && ret == 0; i++) {
+        for (size_t i = start; i < start + stride && ret == 0; i++) {
             double s = 0;
             size_t row_len = a.indexes[i + 1] - a.indexes[i];
             size_t l;

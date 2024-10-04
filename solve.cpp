@@ -100,9 +100,11 @@ int solve(msr &a,
     subtract_vecs_coeff(r + start, b + start, 1, stride);
     double eps = 0;
 
-    for (size_t i = start; i < start + stride; i++)
-        eps += fabs(b[i]);
-    reduce_sum(p, &eps, 1);
+    for (size_t i = start; i < start + stride; i++) {
+        double value = fabs(b[i]);
+        if (eps < value) eps = value;
+    }
+    reduce_max(p, &eps, 1);
     eps *= desired_eps * desired_eps;
     /*
   if (thread == 0)
@@ -115,10 +117,11 @@ int solve(msr &a,
 */
     double t;
     for (iter = 1; iter <= max_it; iter++) {
-        memcpy(v + start, r + start, stride*(sizeof(double))); (void) m; (void) d;
+        //memcpy(v + start, r + start, stride*(sizeof(double))); (void) m; (void) d;
+       
+        reduce_sum<double>(p);
+        inv_m_mul_vec(m, d, r, v, start, stride);
         
-      //  reduce_sum<double>(p);
-    //    inv_m_mul_vec(m, d, r, v, start, stride);
         reduce_sum<double>(p);
         mul_msr_by_vec(a, v, u, start, stride);
         double c[2];
@@ -126,7 +129,7 @@ int solve(msr &a,
         c[1] = dot_prod(u, v, start, stride);
         reduce_sum(p, c, 2);
         //printf("thread = %d, iter = %d, c0 = %le, c1 = %le, eps = %le\n", thread, iter, c[0], c[1], eps);
-        if (fabs(c[0]) <= eps || fabs(c[1]) <= eps)
+        if (fabs(c[0]) <= eps && fabs(c[1]) <= eps)
             return 0;
         t = c[0] / c[1];
         //printf("thread = %d, c0 = %le, c1 = %le,  t = %le\n", thread, c[0], c[1], t);

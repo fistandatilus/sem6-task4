@@ -3,6 +3,8 @@
 #define GRAPH_H
 
 #include <QtWidgets/QtWidgets>
+#include <QThread>
+
 #include "approximation.h"
 
 #define DEFAULT_A -10
@@ -34,7 +36,7 @@ private:
     size_t my = 1;
     int mode = 0;
     bool enabled = true;
-    int p = 0;
+    int error = 0;
     double (*f)(double, double) = nullptr;
     double max[MODE_AMOUNT];
     double min[MODE_AMOUNT];
@@ -42,12 +44,15 @@ private:
     approximation *approx;
     TrivialApproximation trivapp;
     DifferenceApproximation diffapp;
+    QThread controller_thread;
 
 public:
     Graph(QWidget *parent);
     ~Graph() {
-    if (approx)
-        delete approx;
+        controller_thread.quit();
+        controller_thread.wait();
+        if (approx)
+            delete approx;
     }
 
     QSize minimumSizeHint() const;

@@ -96,7 +96,7 @@ int init_gramm_struct(size_t nx, size_t ny, int p, int thread, size_t **indexes_
         indexes[indexes[base] + 2] = base + 1;
         indexes[indexes[base] + 3] = base + nx + 1;
 
-        for (size_t j = base + 1; j - base < nx; j++) {
+        for (size_t j = base + 1; j < base + nx; j++) {
             indexes[j] = index_offset + (j - base) * 6 - 2;
             indexes[indexes[j]] = j - (nx + 1);
             indexes[indexes[j] + 1] = j - nx;
@@ -209,6 +209,7 @@ void fill_gramm(
 
 #define F(I, J) (f(a + (I) * hx, b - (J) * hy))
 
+template <typename T>
 double bprod(size_t i,
              size_t j,
              size_t nx,
@@ -217,7 +218,7 @@ double bprod(size_t i,
              double b,
              double hx,
              double hy,
-             double f(double, double))
+             T f)
 {
     double w = hx * hy / 192;
     if (0 < i && 0 < j && i < nx && j < ny)
@@ -286,7 +287,8 @@ void fill_right_side(size_t nx,
                      double b,
                      double c,
                      double d,
-                     double f(double, double))
+                     double f(double, double),
+                     int error)
 {
     size_t stride, start;
     double hx = (b - a) / nx, hy = (d - c) / ny;
@@ -295,4 +297,35 @@ void fill_right_side(size_t nx,
     for (size_t i = start; i < start + stride; i++)
         for (size_t j = 0; j <= nx; j++)
             right[i * (nx + 1) + j] = bprod(j, i, nx, ny, a, d, hx, hy, f);
+
+    double fmax = 0;
+    if (error) {
+        fmax = find_f_maxabs(f, a, b, c, d, nx, ny, p, thread);
+        if (thread == 0) {
+            auto indicator = [=](double x, double y) -> double {
+                if (a + hx * nx * 0.5 - x < hx * 0.25 && c + hy * ny * 0.5 - y < hy * 0.25)
+                    return fmax*error;
+                return 0.;
+            };
+            for (size_t i = (ny - 1)/2; i <= ny/2 + 1; i++)
+                for (size_t j = (nx - 1)/2; j <= nx/2 + 1; j++)
+                    right[i * (nx + 1) + j] += bprod(j, i, nx, ny, a, d, hx, hy, indicator);
+        }
+    }
+}
+
+double find_f_maxabs(double f(double, double), double a, double b, double c, double d, size_t nx, size_t ny, int p, int thread) {
+    size_t stride, start;
+    start_and_size(p, thread, ny, start, stride);
+    double hx = (b - a) / nx, hy = (d - c) / ny;
+    double max = 0;
+    
+    for (size_t i = 0; i < stride*2 + 1; i++)
+        for (size_t j = 0; j < nx*2 + 1; j++) {
+            double value = fabs(f(a + hx*j*0.5, d - hy*i*0.5));
+                if (value > max)
+                    max = value;
+        }
+    reduce_max(p, &max, 1);
+    return max;
 }
