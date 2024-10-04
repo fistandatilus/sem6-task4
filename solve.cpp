@@ -115,10 +115,10 @@ int solve(msr &a,
 */
     double t;
     for (iter = 1; iter <= max_it; iter++) {
-        //memcpy(v + start, r + start, stride*(sizeof(double))); (void) m; (void) d;
+        memcpy(v + start, r + start, stride*(sizeof(double))); (void) m; (void) d;
         
-        reduce_sum<double>(p);
-        inv_m_mul_vec(m, d, r, v, start, stride);
+      //  reduce_sum<double>(p);
+    //    inv_m_mul_vec(m, d, r, v, start, stride);
         reduce_sum<double>(p);
         mul_msr_by_vec(a, v, u, start, stride);
         double c[2];

@@ -12,6 +12,9 @@ Graph::Graph(QWidget *parent)
 {
     a = DEFAULT_A;
     b = DEFAULT_B;
+    c = DEFAULT_A;
+    d = DEFAULT_B;
+    zoom = 1;
     nx = DEFAULT_N;
     ny = DEFAULT_N;
     mx = DEFAULT_N;
@@ -53,10 +56,6 @@ status Graph::parse_command_line(int argc, char *argv[])
         return status::error_data;
     }
 
-    center_x = (b + a)*0.5;
-    h_x = (b - a)*0.5;
-    center_y = (d + c)*0.5;
-    h_y = (d - c)*0.5;
     if (!approx)
         approx = new approximation;
     if (!approx)
@@ -127,7 +126,6 @@ void Graph::update_func()
 { 
     printf("before emit\n");
     emit enable(false);
-    update();
     args.k = func_id;
     printf("%le\n", args.a);
     emit calculate(args);
@@ -139,6 +137,23 @@ void Graph::eval_y_max_min()
 {
     approximation &pf = *approx;
     DifferenceApproximation &df = diffapp;
+    double a = this->a;
+    double b = this->b;
+    double c = this->c;
+    double d = this->d;
+    double center_x = (a + b) * 0.5;
+    double center_y = (c + d) * 0.5;
+    double len_x = (b - a) * 0.5 * zoom;
+    double len_y = (d - c) * 0.5 * zoom;
+    a = center_x - len_x;
+    b = center_x + len_x;
+    c = center_y - len_y;
+    d = center_y + len_y;
+    draw_a = a;
+    draw_b = b;
+    draw_c = c;
+    draw_d = d;
+
     double hx = (b - a)/mx;
     double hy = (d - c)/my;
     max[0] = f(a + hx/3, c + 2*hy/3);
@@ -171,8 +186,8 @@ void Graph::eval_y_max_min()
 //math coords to window coords
 QPointF Graph::m2w(double x_m, double y_m)
 {
-    double x_w = (x_m - a) / (b - a) * width();
-    double y_w = (d - y_m) / (d - c) * height();
+    double x_w = (x_m - draw_a) / (draw_b - draw_a) * width();
+    double y_w = (draw_d - y_m) / (draw_d - draw_c) * height();
     return QPointF(x_w, y_w);
 }
 
@@ -206,7 +221,7 @@ void Graph::paintEvent(QPaintEvent * /* event */)
     label.append(QString::asprintf("maximum of |f| = %le", max));
     // render function name
     label.append(QString::asprintf("%s nx = %lu, ny = %lu, mx = %lu, my = %lu\n a = %.2e b = %.2e, c = %.2e, d = %.2e, p = %d, mode = %d",
-                                       f_name, nx, ny, mx, my, a, b, c, d, p, mode));
+                                       f_name, nx, ny, mx, my, draw_a, draw_b, draw_c, draw_d, p, mode));
     emit set_label(label);
 }
 
@@ -235,6 +250,10 @@ void Graph::paint_approx(Paintable &approx, QPainter &painter)
     size_t mx = this->mx < (size_t) width() ? this->mx : width();
     size_t my = this->my < (size_t) height() ? this->my : height();
     printf("mx = %ld, width = %d\n", mx, width());
+    double a = draw_a;
+    double b = draw_b;
+    double c = draw_c;
+    double d = draw_d;
     double hx = (b - a) / mx;
     double hy = (d - c) / my;
     double norm = max[mode]- min[mode];

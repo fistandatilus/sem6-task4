@@ -19,14 +19,15 @@ class Graph : public QWidget
 private:
     int func_id = 0;
     const char *f_name = nullptr;
-    double center_x = 0;
-    double h_x = 1;
-    double center_y = 0;
-    double h_y = 1;
+    double zoom = 1;
     double a = -1;
     double b = 1;
     double c = -1;
     double d = 1;
+    double draw_a = -1;
+    double draw_b = 1;
+    double draw_c = -1;
+    double draw_d = 1;
     size_t nx = 1;
     size_t ny = 1;
     size_t mx = 1;

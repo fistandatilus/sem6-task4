@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
 
     action = tool_bar->addAction ("&m*2", graph, SLOT (enlarge_m ()));
-    action->setShortcut (QString ("6")); 
+    action->setShortcut (QString ("8")); 
     QObject::connect(graph, SIGNAL(enable(bool)), action, SLOT(setEnabled(bool)));
 
 

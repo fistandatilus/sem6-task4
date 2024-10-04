@@ -14,25 +14,16 @@ void Graph::change_mode()
 
 void Graph::enlarge_segment()
 {
-    h_x *= 2;
-    a = center_x - h_x;
-    b = center_x + h_x;
-    h_y *= 2;
-    c = center_y - h_y;
-    d = center_y + h_y;
-    update_func();
+    zoom *= 2;
+    if (zoom > 1) zoom = 1;
+    eval_y_max_min();
     update();
 }
 
 void Graph::shrink_segment()
 {
-    h_x *= 0.5;
-    a = center_x - h_x;
-    b = center_x + h_x;
-    h_y *= 0.5;
-    c = center_y - h_y;
-    d = center_y + h_y;
-    update_func();
+    zoom *= 0.5;
+    eval_y_max_min();
     update();
 }
 
